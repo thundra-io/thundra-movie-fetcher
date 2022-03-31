@@ -1,0 +1,66 @@
+org: mbillock
+app: thundra-movie-fetcher
+service: thundra-movie-fetcher
+frameworkVersion: '2 || 3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: '20201221'
+
+functions:
+  fetchMovie:
+    handler: handler.fetchMovie
+    environment:
+      TMDB_API_KEY: ${param:TMDB_API_KEY}
+    events:
+      - httpApi:
+          path: /fetch_movies
+          method: get
+  parseResponse:
+    handler: handler.parseResponse
+    events:
+      - httpApi:
+          path: /fetch_and_parse_movies
+          method: get
+
+stepFunctions:
+  stateMachines:    	
+    hellostepfunc1:
+      events:
+        - http:
+            path: getMoviesNearMe
+            method: GET
+        - schedule:
+            rate: rate(10 minutes)
+            enabled: true
+            input:
+              stageParams:
+                stage: dev
+      name: movieListStateMachine
+      definition:
+        Comment: "Demonstrates fetching movies from an API and parsing the response"
+        StartAt: FetchMovies
+        States:
+          FetchMovies:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            OutputPath: "$.Payload"
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [fetchMovie, Arn]
+            Next: ParseOutput
+          ParseOutput:
+            Type: "Task"
+            Resource: "arn:aws:states:::lambda:invoke"
+            OutputPath: "$.Payload"
+            Parameters:
+              Payload.$: "$"
+              FunctionName: 
+                Fn::GetAtt: [parseResponse, Arn]
+            End: true
+
+plugins:
+  - serverless-step-functions
+  - serverless-dotenv-plugin
+  

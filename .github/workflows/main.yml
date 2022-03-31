@@ -1,0 +1,43 @@
+name: Deploy main branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v2
+    # Specify your npm / yarn install step
+    - name: Set up Node 12
+      uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+    - run: npm install
+    - name: Thundra Foresight JS Instrumentation
+      uses: thundra-io/thundra-foresight-js-action@v1
+      with:
+        apikey: ${{ secrets.THUNDRA_API_KEY }}
+        project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
+        # Modify or remove the command
+        # Default is "npm test" 
+        # Modify according to your test script.
+        # ex: yarn run test:integration || npm run test:e2e
+        command: npm run test:all
+    - name: serverless deploy
+      uses: serverless/github-action@master
+      with:
+        args: deploy
+      env:
+        SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+        TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        APP_ENV:  ${{ secrets.APP_ENV }}
+        # or if using AWS credentials directly
+        # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

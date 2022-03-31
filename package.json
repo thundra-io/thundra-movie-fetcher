@@ -1,0 +1,24 @@
+{
+  "name": "thundra-movie-fetcher",
+  "version": "1.0.0",
+  "description": "lambda function to demo debugging",
+  "main": "handler.js",
+  "scripts": {
+    "test": "jest",
+    "test:all": "jest"
+  },
+  "author": "Matt Billock",
+  "license": "ISC",
+  "dependencies": {
+    "@thundra/core": "^2.13.25",
+    "dotenv": "^14.2.0",
+    "https": "^1.0.0",
+    "path-posix": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^27.4.7",
+    "serverless-dotenv-plugin": "^3.12.2",
+    "serverless-pseudo-parameters": "^2.6.1",
+    "serverless-step-functions": "^3.5.1"
+  }
+}
